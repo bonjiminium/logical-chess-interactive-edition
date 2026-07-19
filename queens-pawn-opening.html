@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Queen’s Pawn Opening — Logical Chess</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { background: #f7f4ee; }
+    .section-layout { height: 100vh; overflow: hidden; }
+    .reading-panel { background: #fff; height: 100%; margin: 0 auto; max-width: 76rem; min-width: 0; overflow: hidden; position: relative; }
+    .lesson-page { box-sizing: border-box; display: none; height: 100%; margin: 0; overflow-x: hidden; overflow-y: auto; padding: 5.5rem clamp(1.5rem, 7vw, 8rem) 4rem; width: 100%; }
+    .lesson-page.is-active { display: block; }
+    .lesson-page > * { box-sizing: border-box; margin-left: auto; margin-right: auto; max-width: 55rem; }
+    .lesson-page p { font-size: clamp(1.2rem, 1.7vw, 1.45rem); line-height: 1.55; margin-bottom: 1.3rem; }
+    .lesson-page--title { align-content: center; padding-bottom: 8rem; }
+    .lesson-page--title .section-title { margin-bottom: 0; }
+    @media (max-width: 800px) {
+      html, body { height: 100%; overflow: hidden; }
+      .section-layout, .reading-panel { height: 100svh; }
+      .lesson-page { height: 100%; min-height: 0; padding: 4.75rem 1.25rem 3rem; }
+      .lesson-page--title { padding-bottom: 7rem; }
+      .lesson-page p { font-size: 1.2rem; line-height: 1.5; }
+    }
+  </style>
+  <link href="logical-chess.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <div class="section-layout">
+    <main class="reading-panel">
+      <nav class="page-controls" aria-label="Page navigation">
+        <button type="button" id="previous-page" aria-label="Previous page">←</button>
+        <button type="button" id="next-page" aria-label="Next page">→</button>
+      </nav>
+      <div class="page-indicator" id="page-indicator" aria-live="polite"></div>
+
+      <section class="lesson-page lesson-page--title is-active">
+        <p class="title-eyebrow">Logical Chess: Move by Move</p>
+        <h1 class="section-title">The Queen’s Pawn Opening</h1>
+      </section>
+
+      <section class="lesson-page">
+        <p>At some time in his life, almost every chess player makes a happy discovery – the Queen’s Pawn Opening.</p>
+        <p>The Queen’s Pawn offers White a great many advantages, and all of them can be summed up in one word – pressure!</p>
+        <p>White gets opportunities to control and exert pressure on the c-file, and in particular on the c5-square. So powerful can it be as to cause, by itself, the collapse of Black’s game.</p>
+        <p>Against its dire effects there is only one antidote: the advance ...c5, which Black <i>must</i> get in, sooner or later. Without it, he may be choked to death; with it, he frees his position on the queenside, establishes a state of tension in the centre, and can put up a fight for possession of the c-file.</p>
+      </section>
+
+      <section class="lesson-page">
+        <p>The game Pillsbury-Mason (No. 17) is a classic example of White controlling the c-file, while Black fails to free himself by ...c5. Pillsbury fixes the c-pawn so it dare not move, and then proceeds to attack it with more pieces than Black can summon to its defence. The pawn falls, of course, and White’s continuing control of the vital c-file, extending into the ending, makes the winning process look easy.</p>
+        <p>In Noteboom-Doesburgh (No. 18), neglect of the freeing manoeuvre ...c5 allows White to restrain and prevent forever the advance of the c-pawn. Eventually, the pawn is nailed down so that Black’s queenside is held in an iron grip. The weaknesses on the queenside lead to collapse on the kingside.</p>
+      </section>
+
+      <section class="lesson-page">
+        <p>Similar difficulties beset Black in Grünfeld-Schenkein (No. 19), where delay in challenging the centre leads to a sealing in of Black’s c-pawn, and with it his queenside, by an unprotected pawn! White’s sudden shifting of the attack to the kingside leaves Black helpless to resist.</p>
+        <p>Positional play on a grand scale is seen in the Rubinstein-Salwe (No. 20) game. This again shows the consequences of Black’s omission of the key defensive move in this opening, namely ...c5. White’s control of the c-file and the c5-square enables him to demonstrate a remarkable bit of strategy. He blockades c5 with a bishop (stopping Black’s c-pawn dead in its tracks) and then switches blockaders about, so that this square is occupied in turn by a bishop, a knight, a rook and the queen! Rubinstein eventually captures the c-pawn that was marked for doom and swings into the final movement, a triumphal march of his own passed pawn.</p>
+      </section>
+
+      <section class="lesson-page">
+        <p>In the Chernev-Hahlbohm (No. 21) game, Black gets in the important counterthrust ...c5, but his centre, with an unprotected knight at d5, lacks solidity. Chernev gains time for his attack by threats against Black’s exposed pieces, and it is <i>these gains of tempo that lend the game its interest.</i></p>
+        <p>Pillsbury-Marco (No. 22) is an ideal Queen’s Gambit game. In it, we see the classic demonstration of what came to be known as the Pillsbury Attack. It is a beautiful example of the power of a knight outpost at e5, and the impetus it furnishes to a whirlwind kingside attack.</p>
+      </section>
+
+      <section class="lesson-page">
+        <p>In the game between Van Vliet and Znosko-Borovsky (No. 23), it is Black who wrests control of the c-file by a counterattack at the second move with 2...c5. It leads to more advantages, culminating in a rook invasion of the seventh rank and the establishment of a knight outpost at e4. Eventually, Black doubles rooks on the c-file and manoeuvres his king in among the enemy pawns. This leads to his winning a pawn, and the rest is a delightful little lesson in the art of simplification.</p>
+      </section>
+    </main>
+  </div>
+  <script>
+    const pages = [...document.querySelectorAll(".lesson-page")];
+    const previous = document.getElementById("previous-page");
+    const next = document.getElementById("next-page");
+    const pageIndicator = document.getElementById("page-indicator");
+    const pageStorageKey = "logical-chess-queens-pawn-opening-page";
+    let pageIndex = Number(localStorage.getItem(pageStorageKey)) || 0;
+
+    function showPage(index) {
+      pageIndex = Math.max(0, Math.min(index, pages.length - 1));
+      localStorage.setItem(pageStorageKey, pageIndex);
+      pages.forEach((page, i) => {
+        page.classList.toggle("is-active", i === pageIndex);
+        if (i === pageIndex) page.scrollTop = 0;
+      });
+      previous.disabled = pageIndex === 0;
+      next.disabled = pageIndex === pages.length - 1;
+      pageIndicator.textContent = `Page ${pageIndex + 1} of ${pages.length}`;
+    }
+
+    previous.addEventListener("click", () => showPage(pageIndex - 1));
+    next.addEventListener("click", () => showPage(pageIndex + 1));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") showPage(pageIndex - 1);
+      if (event.key === "ArrowRight") showPage(pageIndex + 1);
+    });
+    showPage(pageIndex);
+  </script>
+</body>
+</html>

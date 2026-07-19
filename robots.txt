@@ -1,0 +1,3 @@
+# This public site asks cooperating web crawlers not to crawl or index it.
+User-agent: *
+Disallow: /

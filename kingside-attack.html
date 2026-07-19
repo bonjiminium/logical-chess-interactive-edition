@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Kingside Attack — Logical Chess</title>
+  <style>
+    :root { color: #201b17; background: #fff; font-family: Georgia, serif; }
+    html, body { height: 100%; margin: 0; }
+    .section-layout { display: grid; grid-template-columns: minmax(22rem, 1fr) minmax(0, 1fr); min-height: 100vh; }
+    .board-panel { align-self: start; background: #f7f4ee; border-right: 1px solid #d5cec2; display: grid; height: 100vh; place-items: center; position: sticky; top: 0; }
+    .board-panel > div { width: min(80%, 34rem); }
+    .board-panel .position { width: 100%; }
+    .board-caption { color: #665f55; font: .9rem system-ui, sans-serif; margin: 1rem 0 0; text-align: center; }
+    .reading-panel { height: 100vh; min-width: 0; overflow: hidden; position: relative; }
+    .section-page { box-sizing: border-box; display: none; height: 100%; margin: 0; max-width: none; overflow-x: hidden; overflow-y: auto; padding: 4.5rem clamp(1.25rem, 4vw, 4rem) 4rem; width: 100%; }
+    .section-page > * { box-sizing: border-box; margin-left: auto; margin-right: auto; max-width: 55rem; }
+    .section-page.is-active { display: block; }
+    h1 { font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.05; margin: 0 0 2rem; text-align: center; }
+    .eyebrow { color: #8b5b36; font: 700 .75rem system-ui, sans-serif; letter-spacing: .12em; margin: 0 0 .75rem; text-align: center; text-transform: uppercase; }
+    p { font-size: 1.3rem; line-height: 1.5; margin: 0 0 1.15rem; }
+    .guide-intro { border-top: 1px solid #ddd2c3; margin-top: 2rem; padding-top: 1.75rem; }
+    .game-guide { border-left: 3px solid #b58863; margin: 1.25rem 0; padding: .15rem 0 .15rem 1rem; }
+    .page-controls { display: flex; gap: .5rem; position: absolute; right: 1.25rem; top: 1.25rem; z-index: 2; }
+    .page-controls button { background: #fff; border: 1px solid #aaa; border-radius: .3rem; cursor: pointer; font-size: 1.25rem; height: 2.25rem; width: 2.5rem; }
+    .page-controls button:disabled { cursor: default; opacity: .35; }
+    .page-indicator { bottom: 1.5rem; color: #665f55; font: .9rem system-ui, sans-serif; position: absolute; right: 1.75rem; }
+    .chessboard { aspect-ratio: 1; box-sizing: border-box; container-type: inline-size; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr)); border: 2px solid #333; position: relative; width: 100%; }
+    .chessboard__square { display: grid; min-height: 0; min-width: 0; place-items: center; position: relative; font-family: "DejaVu Sans", serif; font-size: clamp(.75rem, 8.25cqi, 3.3rem); line-height: 1; }
+    .chessboard__square.light { background: #f0d9b5; } .chessboard__square.dark { background: #b58863; }
+    .chessboard__piece--white { color: #fffdf5; text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333; } .chessboard__piece--black { color: #181818; text-shadow: 0 1px 0 #777; }
+    .chessboard__square[data-rank]::before, .chessboard__square[data-file]::after { color: #513a28; font: 700 .7rem system-ui, sans-serif; position: absolute; text-shadow: none; z-index: 1; }
+    .chessboard__square[data-rank]::before { content: attr(data-rank); left: .2rem; top: .15rem; } .chessboard__square[data-file]::after { bottom: .1rem; content: attr(data-file); right: .2rem; }
+    @media (max-width: 800px) {
+      html, body { overflow: hidden; }
+      .section-layout { --board-size: min(44svh, calc(100vw - 1rem)); --board-block: calc(var(--board-size) + 1rem); display: block; height: 100svh; overflow: hidden; }
+      .board-panel { box-sizing: border-box; height: var(--board-block); min-height: 0; padding: .5rem; position: static; }
+      .board-panel > div { width: var(--board-size); }
+      .board-panel .position { margin: 0; width: 100%; } .board-caption { display: none; }
+      .reading-panel { height: calc(100svh - var(--board-block)); }
+      .section-page { height: 100%; padding: 4.25rem 1.25rem 2rem; }
+      p { font-size: 1.2rem; line-height: 1.45; }
+    }
+  </style>
+  <link href="logical-chess.css" rel="stylesheet" type="text/css">
+  <script src="chessboard.js"></script>
+</head>
+<body>
+  <div class="section-layout">
+    <aside class="board-panel" aria-label="Illustration of a castled king position">
+      <div>
+        <div class="position" id="castled-position"></div>
+        <p class="board-caption">A castled king protected by knight and pawns</p>
+      </div>
+    </aside>
+    <main class="reading-panel">
+      <section class="section-page is-active">
+        <p class="title-eyebrow">Section 1</p>
+        <h1 class="section-title">The Kingside Attack</h1>
+            <p>It is not the purpose of this book to bewilder you with magical effects; it is to show you how they are produced.</p>
+            <p>Take the popular kingside attack; it is attractive because it features combinative play with its brilliant sacrifices and surprise moves. It is appealing because it aims for quick checkmate and lets you play startling moves to bring it about.</p>
+            <p>But when and how do you start a kingside attack? Must you wait for an inspiration?</p>
+            <p>The answer is simple and may be surprising, so let us look behind the scenes:</p>
+            <p>The diagram shows a castled position. The king is protected by a knight at f3 and the three pawns in front of him. While these protectors stay where they are, the king is highly resistant to attack. The moment the formation is changed, the structure is loosened and weakened. <i>It is then vulnerable to attack.</i></p>
+      </section>
+    </main>
+  </div>
+  <script>
+    renderChessboard(document.querySelector('#castled-position'), '8/8/8/8/8/5N2/5PPP/5RK1 w - - 0 1');
+  </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logical Chess: Move by Move</title>
+  <link href="logical-chess.css" rel="stylesheet" type="text/css">
+  <style>
+    html, body { margin: 0; min-height: 100%; }
+    body { background: var(--lc-panel); }
+    .library { box-sizing: border-box; margin: 0 auto; max-width: 70rem; padding: clamp(2.5rem, 7vw, 6rem) clamp(1.25rem, 5vw, 4rem) 4rem; }
+    .library-header { border-bottom: 1px solid #d5cec2; margin-bottom: 3rem; padding-bottom: 2.5rem; }
+    .library-kicker { color: var(--lc-accent); font: 700 .75rem system-ui, sans-serif; letter-spacing: .14em; margin: 0 0 1rem; text-transform: uppercase; }
+    h1 { font-size: clamp(2.5rem, 7vw, 5rem); line-height: .95; margin: 0; max-width: 12ch; }
+    .library-subtitle { color: var(--lc-muted); font-size: clamp(1.1rem, 2vw, 1.35rem); line-height: 1.5; margin: 1.5rem 0 0; max-width: 43rem; }
+    .contents { display: grid; gap: 3rem; }
+    .book-section { scroll-margin-top: 1rem; }
+    .section-heading { align-items: baseline; border-bottom: 1px solid #d5cec2; display: flex; gap: 1rem; justify-content: space-between; margin: 0 0 1rem; padding-bottom: .75rem; }
+    .section-heading h2 { font-size: clamp(1.45rem, 3vw, 2rem); margin: 0; }
+    .section-count { color: var(--lc-muted); font: .85rem system-ui, sans-serif; white-space: nowrap; }
+    .chapter-list { display: grid; gap: .55rem; list-style: none; margin: 0; padding: 0; }
+    .chapter-link, .chapter-pending { align-items: center; border: 1px solid #d5cec2; border-radius: .35rem; box-sizing: border-box; display: grid; gap: 1rem; grid-template-columns: 3.5rem minmax(0, 1fr) auto; min-height: 4.25rem; padding: .75rem 1rem; }
+    .chapter-link { background: #fff; color: inherit; text-decoration: none; }
+    .chapter-link:hover, .chapter-link:focus-visible { border-color: var(--lc-accent); box-shadow: 0 0 0 3px rgb(139 91 54 / .18); outline: none; }
+    .chapter-pending { background: rgb(255 255 255 / .45); color: var(--lc-muted); }
+    .chapter-number { color: var(--lc-accent); font: 700 .8rem system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+    .chapter-title { font-size: 1.1rem; line-height: 1.25; }
+    .chapter-meta { color: var(--lc-muted); font: .8rem system-ui, sans-serif; text-align: right; }
+    .chapter-pending .chapter-meta { font-style: italic; }
+    @media (max-width: 540px) {
+      .chapter-link, .chapter-pending { gap: .75rem; grid-template-columns: 3.1rem minmax(0, 1fr); }
+      .chapter-meta { grid-column: 2; text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <main class="library">
+    <header class="library-header">
+      <p class="library-kicker">Interactive edition</p>
+      <h1>Logical Chess: Move by Move</h1>
+      <p class="library-subtitle">Every move explained. Choose a section or game to read with an interactive chessboard.</p>
+    </header>
+
+    <nav class="contents" aria-label="Book contents">
+      <section class="book-section" aria-labelledby="front-matter-heading">
+        <div class="section-heading">
+          <h2 id="front-matter-heading">Begin here</h2>
+          <span class="section-count">1 lesson</span>
+        </div>
+        <ol class="chapter-list">
+          <li><a class="chapter-link" href="introduction.html"><span class="chapter-number">Start</span><span class="chapter-title">Introduction</span><span class="chapter-meta">Read first</span></a></li>
+        </ol>
+      </section>
+
+      <section class="book-section" aria-labelledby="section-one-heading">
+        <div class="section-heading">
+          <h2 id="section-one-heading">Section 1: The Kingside Attack</h2>
+          <span class="section-count">16 of 16 games ready</span>
+        </div>
+        <ol class="chapter-list">
+          <li><a class="chapter-link" href="kingside-attack.html"><span class="chapter-number">Guide</span><span class="chapter-title">The Kingside Attack</span><span class="chapter-meta">Section introduction</span></a></li>
+          <li><a class="chapter-link" href="03-chapter-4.html"><span class="chapter-number">Game 1</span><span class="chapter-title">von Scheve – Teichmann</span><span class="chapter-meta">Berlin, 1907</span></a></li>
+          <li><a class="chapter-link" href="04-chapter-5.html"><span class="chapter-number">Game 2</span><span class="chapter-title">Liubarski – Soultanbéieff</span><span class="chapter-meta">Liège, 1928</span></a></li>
+          <li><a class="chapter-link" href="05-chapter-6.html"><span class="chapter-number">Game 3</span><span class="chapter-title">Colle – Delvaux</span><span class="chapter-meta">Gand-Terneuzen, 1929</span></a></li>
+          <li><a class="chapter-link" href="06-chapter-7.html"><span class="chapter-number">Game 4</span><span class="chapter-title">Blackburne – Blanchard</span><span class="chapter-meta">London, 1891</span></a></li>
+          <li><a class="chapter-link" href="07-chapter-8.html"><span class="chapter-number">Game 5</span><span class="chapter-title">Ruger – Gebhard</span><span class="chapter-meta">Dresden, 1915</span></a></li>
+          <li><a class="chapter-link" href="08-chapter-9.html"><span class="chapter-number">Game 6</span><span class="chapter-title">Zeissl – Walthoffen</span><span class="chapter-meta">Vienna, 1899</span></a></li>
+          <li><a class="chapter-link" href="09-chapter-10.html"><span class="chapter-number">Game 7</span><span class="chapter-title">Spielmann – Wahle</span><span class="chapter-meta">Vienna, 1926</span></a></li>
+          <li><a class="chapter-link" href="10-chapter-11.html"><span class="chapter-number">Game 8</span><span class="chapter-title">Przepiorka – Prokeš</span><span class="chapter-meta">Budapest, 1929</span></a></li>
+          <li><a class="chapter-link" href="11-chapter-12.html"><span class="chapter-number">Game 9</span><span class="chapter-title">Znosko-Borovsky – Mackenzie</span><span class="chapter-meta">Weston-super-Mare, 1924</span></a></li>
+          <li><a class="chapter-link" href="12-chapter-13.html"><span class="chapter-number">Game 10</span><span class="chapter-title">Tarrasch – Eckart</span><span class="chapter-meta">Nuremberg, 1889</span></a></li>
+          <li><a class="chapter-link" href="13-chapter-14.html"><span class="chapter-number">Game 11</span><span class="chapter-title">Flohr – Pitschak</span><span class="chapter-meta">Bilin, 1930</span></a></li>
+          <li><a class="chapter-link" href="14-chapter-15.html"><span class="chapter-number">Game 12</span><span class="chapter-title">Pitschak – Flohr</span><span class="chapter-meta">Liebwerda, 1934</span></a></li>
+          <li><a class="chapter-link" href="15-chapter-16.html"><span class="chapter-number">Game 13</span><span class="chapter-title">Dobias – Podgorny</span><span class="chapter-meta">Prague, 1952</span></a></li>
+          <li><a class="chapter-link" href="16-chapter-17.html"><span class="chapter-number">Game 14</span><span class="chapter-title">Tarrasch – Mieses</span><span class="chapter-meta">Berlin, 1916</span></a></li>
+          <li><a class="chapter-link" href="17-chapter-18.html"><span class="chapter-number">Game 15</span><span class="chapter-title">Alekhine – Poindle</span><span class="chapter-meta">Vienna, 1936</span></a></li>
+          <li><a class="chapter-link" href="18-chapter-19.html"><span class="chapter-number">Game 16</span><span class="chapter-title">Tarrasch – Kurschner</span><span class="chapter-meta">Nuremberg, 1889</span></a></li>
+        </ol>
+      </section>
+
+      <section class="book-section" aria-labelledby="section-two-heading">
+        <div class="section-heading">
+          <h2 id="section-two-heading">Section 2: The Queen’s Pawn Opening</h2>
+          <span class="section-count">4 of 7 games ready</span>
+        </div>
+        <ol class="chapter-list">
+          <li><a class="chapter-link" href="queens-pawn-opening.html"><span class="chapter-number">Guide</span><span class="chapter-title">The Queen’s Pawn Opening</span><span class="chapter-meta">Section introduction</span></a></li>
+          <li><a class="chapter-link" href="20-chapter-21.html"><span class="chapter-number">Game 17</span><span class="chapter-title">Pillsbury – Mason</span><span class="chapter-meta">Hastings, 1895</span></a></li>
+          <li><a class="chapter-link" href="21-chapter-22.html"><span class="chapter-number">Game 18</span><span class="chapter-title">Noteboom – Doesburgh</span><span class="chapter-meta">Netherlands, 1931</span></a></li>
+          <li><a class="chapter-link" href="22-chapter-23.html"><span class="chapter-number">Game 19</span><span class="chapter-title">Grünfeld – Schenkein</span><span class="chapter-meta">Vienna, 1915</span></a></li>
+          <li><a class="chapter-link" href="23-chapter-24.html"><span class="chapter-number">Game 20</span><span class="chapter-title">Rubinstein – Salwe</span><span class="chapter-meta">Lodz, 1908</span></a></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 21</span><span class="chapter-title">Chernev – Hahlbohm</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 22</span><span class="chapter-title">Pillsbury – Marco</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 23</span><span class="chapter-title">Van Vliet – Znosko-Borovsky</span><span class="chapter-meta">Coming soon</span></span></li>
+        </ol>
+      </section>
+
+      <section class="book-section" aria-labelledby="section-three-heading">
+        <div class="section-heading">
+          <h2 id="section-three-heading">Section 3: The Chess Master Explains His Ideas</h2>
+          <span class="section-count">10 games coming soon</span>
+        </div>
+        <ol class="chapter-list">
+          <li><span class="chapter-pending"><span class="chapter-number">Guide</span><span class="chapter-title">The Chess Master Explains His Ideas</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 24</span><span class="chapter-title">Capablanca – Mattison</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 25</span><span class="chapter-title">Janowsky – Alapin</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 26</span><span class="chapter-title">O. Bernstein – Mieses</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 27</span><span class="chapter-title">Chekhover – Rudakovsky</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 28</span><span class="chapter-title">Tarrasch – Mieses</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 29</span><span class="chapter-title">Marshall – Tarrasch</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 30</span><span class="chapter-title">Capablanca – Villegas</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 31</span><span class="chapter-title">Havasi – Capablanca</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 32</span><span class="chapter-title">Canal – Capablanca</span><span class="chapter-meta">Coming soon</span></span></li>
+          <li><span class="chapter-pending"><span class="chapter-number">Game 33</span><span class="chapter-title">Rubinstein – Maroczy</span><span class="chapter-meta">Coming soon</span></span></li>
+        </ol>
+      </section>
+    </nav>
+
+  </main>
+</body>
+</html>

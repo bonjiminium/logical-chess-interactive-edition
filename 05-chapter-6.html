@@ -1,0 +1,542 @@
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en">
+  <head>
+    <title>Game 3 — Logical Chess</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link href="assets/stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="assets/page_styles.css" rel="stylesheet" type="text/css"/>
+<style>
+  html, body, body.calibre { font-family: Georgia, serif; margin: 0; }
+  .lesson-layout { display: grid; grid-template-columns: minmax(22rem, 1fr) minmax(0, 1fr); min-height: 100vh; }
+  .board-panel { align-self: start; background: #f7f4ee; border-right: 1px solid #d5cec2; display: grid; height: 100vh; place-items: center; position: sticky; top: 0; }
+  .reading-panel { height: 100vh; min-width: 0; overflow: hidden; position: relative; }
+  .reading-panel .chapter1 { margin: 0; max-width: none; }
+  .lesson-page { box-sizing: border-box; display: none; height: 100vh; margin: 0; max-width: none; overflow-x: hidden; overflow-y: auto; padding: 4.5rem clamp(.75rem, 2vw, 2rem) 1.5rem; width: 100%; }
+  .lesson-page > * { box-sizing: border-box; margin-left: auto; margin-right: auto; max-width: 55rem; }
+  .lesson-page.is-active { display: block; }
+  .lesson-page--remainder.is-active { overflow-y: auto; }
+  .lesson-page p, .lesson-page li { font-size: 1.5rem; line-height: 1.4; }
+  .lesson-page ul { margin: 1.1rem auto; max-width: 55rem; padding-left: 2rem; }
+  .lesson-page li { margin: .35rem 0; }
+  .page-controls { display: flex; gap: .5rem; position: absolute; right: 1.25rem; top: 1.25rem; z-index: 2; }
+  .page-controls button { background: #fff; border: 1px solid #aaa; border-radius: .3rem; cursor: pointer; font-size: 1.25rem; height: 2.25rem; width: 2.5rem; }
+  .page-controls button:disabled { cursor: default; opacity: .35; }
+  .page-indicator { bottom: 1.5rem; color: #665f55; font: .9rem system-ui, sans-serif; position: absolute; right: 1.75rem; }
+  @media (max-width: 800px) {
+    html, body, body.calibre { height: 100%; overflow: hidden; }
+    .lesson-layout {
+      --mobile-board-size: min(44svh, calc(100vw - 1rem));
+      --mobile-board-block-size: calc(var(--mobile-board-size) + 1rem);
+      height: 100svh;
+      overflow: hidden;
+    }
+    .reading-panel {
+      height: calc(100svh - var(--mobile-board-block-size));
+      overflow: hidden;
+    }
+    .lesson-page {
+      height: 100%;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+  }
+  .position { margin: 1.25rem auto; width: min(28rem, 100%); }
+  .board-panel .position { margin: 0; width: min(80%, 34rem); }
+  .board-caption { bottom: 1.5rem; color: #665f55; font: .9rem system-ui, sans-serif; left: 0; margin: 0; position: absolute; text-align: center; width: 100%; }
+  .board-caption.is-preview { color: #2470a8; }
+  .board-preview { border-bottom: 1px dashed #2470a8; color: #2470a8; cursor: help; }
+  @media (max-width: 800px) {
+    .lesson-layout { display: block; }
+    .board-panel {
+      box-sizing: border-box;
+      height: var(--mobile-board-block-size);
+      min-height: 0;
+      padding: .5rem;
+      position: static;
+      z-index: 3;
+    }
+    .board-panel .position { width: var(--mobile-board-size); }
+    .board-caption { display: none; }
+  }
+  .chessboard { aspect-ratio: 1; box-sizing: border-box; container-type: inline-size; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr)); border: 2px solid #333; position: relative; width: 100%; }
+  .chessboard__square { aspect-ratio: auto; display: grid; min-height: 0; min-width: 0; place-items: center; position: relative; font-family: "DejaVu Sans", serif; font-size: clamp(.75rem, 8.25cqi, 3.3rem); line-height: 1; }
+  .chessboard__arrows { height: 100%; left: 0; opacity: .62; pointer-events: none; position: absolute; top: 0; width: 100%; }
+  .chessboard__square.light { background: #f0d9b5; }
+  .chessboard__square.dark { background: #b58863; }
+  .chessboard__square--highlight { box-shadow: inset 0 0 0 999px rgb(35 134 200 / .3); }
+  .chessboard__piece--white { color: #fffdf5; text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333; }
+  .chessboard__piece--black { color: #181818; text-shadow: 0 1px 0 #777; }
+  .chessboard__square[data-rank]::before, .chessboard__square[data-file]::after { color: #513a28; font: 700 .7rem system-ui, sans-serif; position: absolute; text-shadow: none; z-index: 1; }
+  .chessboard__square[data-rank]::before { content: attr(data-rank); top: .15rem; left: .2rem; }
+  .chessboard__square[data-file]::after { content: attr(data-file); bottom: .1rem; right: .2rem; }
+</style>
+<link href="logical-chess.css" rel="stylesheet" type="text/css"/>
+<script src="chessboard.js"></script>
+</head>
+  <body class="calibre">
+<div class="lesson-layout">
+  <aside class="board-panel" aria-label="Current chess position">
+    <div class="position" id="position-after-e4"></div>
+    <p class="board-caption" id="board-caption">Position</p>
+  </aside>
+  <main class="reading-panel">
+  <nav class="page-controls" aria-label="Page navigation">
+    <button type="button" id="previous-page" aria-label="Previous page">←</button>
+    <button type="button" id="next-page" aria-label="Next page">→</button>
+  </nav>
+  <div class="page-indicator" id="page-indicator" aria-live="polite"></div>
+
+<div class="chapter1">
+<section class="lesson-page" data-fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1">
+<h2 class="calibre15 game-title"><span class="title-eyebrow">Game 3</span><span class="game-title__players">Colle – Delvaux</span><span class="game-title__event">Gand-Terneuzen 1929</span><span class="game-title__opening">Colle System</span></h2>
+</section>
+<section class="lesson-page" data-fen="rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1" data-from="e2" data-to="d4">
+<p class="center" id="pz23-40"> <b class="calibre4">1   d4</b> </p>
+
+
+<p id="pz23-41" class="calibre8"> Modern players consider this to be one of the best opening moves. It is equal in value to <span class="board-preview" tabindex="0" data-preview-fen="rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1" data-from="e2" data-to="e4" data-preview-caption="Preview: 1. e4">1 e4</span> in that two pieces are freed for action, while a pawn seizes a <span class="board-preview" tabindex="0" data-highlight="d4">central square</span>. The difference is that the d-pawn stands protected whereas the e-pawn would be vulnerable to an early attack. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2" data-from="d7" data-to="d5">
+<p class="center" id="pz23-42"> <b class="calibre4">1   ...     d5</b> </p>
+
+
+<p id="pz23-44" class="calibre8"> This move and <span class="board-preview" tabindex="0" data-preview-fen="rnbqkb1r/pppppppp/5n2/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 1 2" data-from="g8" data-to="f6" data-preview-caption="Preview: 1...Nf6" data-arrow-color="#222">1...<img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>f6</span> are by far the most common replies to 1 d4. White must not be allowed to play <span class="board-preview" tabindex="0" data-preview-fen="rnbqkbnr/ppp1pppp/8/3p4/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 2" data-from="e2" data-to="e4" data-preview-caption="Preview: 2. e4">2 e4</span> and dominate the vital central squares with his pawns. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="rnbqkbnr/ppp1pppp/8/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 1 2" data-from="g1" data-to="f3">
+<p class="center" id="pz23-45"> <b class="calibre4">2   <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>f3</b> </p>
+
+
+<p id="pz23-46" class="calibre8"> So great an authority as Emanuel Lasker, World Champion for 27 years, <span id="z24-1">says of this move, “In my practice I have usually found it strongest to post the knights at B3, where they have a magnificent sway.” Here ‘B3’ refers to the <span class="board-preview" tabindex="0" data-highlight="c3 f3 c6 f6">squares c3 and f3 for White, or c6 and f6 for Black</span>. </span></p>
+
+
+</section>
+<section class="lesson-page" data-fen="rnbqkb1r/ppp1pppp/5n2/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 2 3" data-from="g8" data-to="f6">
+<p class="center" id="pz24-2"> <b class="calibre4">2   ...</b>     <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img><b class="calibre4">f6</b> </p>
+
+
+<p id="pz24-4" class="calibre8"> Black follows suit in trumps, developing his king’s knight to its most useful square. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="rnbqkb1r/ppp1pppp/5n2/3p4/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 3" data-from="e2" data-to="e3">
+<p class="center" id="pz24-5"> <b class="calibre4">3   e3</b> </p>
+
+
+<p id="pz24-6" class="calibre8"> Generally, it is dubious strategy to release one bishop while shutting in the other. In this game, White is adopting a system that calls for a storing up of dynamic energy behind the lines, which is released at the right time by an explosion at the <span class="board-preview" tabindex="0" data-highlight="e4">key e4-square</span>. </p>
+
+
+<p id="pz24-7" class="calibre8"> To this end, White develops so that his pieces exert their maximum <span class="board-preview" tabindex="0" data-highlight="e4">pressure at e4</span>. His bishop will therefore occupy <span class="board-preview" tabindex="0" data-highlight="d3">d3</span>, and his <span class="board-preview" tabindex="0" data-highlight="b1">b1-knight</span> will move to <span class="board-preview" tabindex="0" data-highlight="d2">d2</span>. If more concentration of force is needed, his queen will supply it by developing at <span class="board-preview" tabindex="0" data-highlight="e2">e2</span>, or he may play <span class="board-preview" tabindex="0" data-highlight="e1 g1">0-0</span> followed by <span class="board-preview" tabindex="0" data-highlight="e1"><img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>e1</span>. Then, with all this potential energy ready to let loose, the <span class="board-preview" tabindex="0" data-highlight="e4">e-pawn advances to e4</span>, to rip the position apart and open fire on Black’s kingside. </p>
+
+
+<p id="pz24-8" class="calibre8"> Development in the Colle System is on positional lines, but the objective is a kingside attack! </p>
+
+
+</section>
+<section class="lesson-page" data-fen="rnbqkb1r/ppp2ppp/4pn2/3p4/3P4/4PN2/PPP2PPP/RNBQKB1R w KQkq - 0 4" data-from="e7" data-to="e6">
+<p class="center" id="pz24-9"> <b class="calibre4">3   ...     e6</b> </p>
+
+
+<p id="pz24-11" class="calibre8"> This is a routine developing move which serves to maintain the symmetry but has the defect of not crossing White’s plans. Clearly, it was better strategy either to attack White’s pawn-centre by <span class="board-preview" tabindex="0" data-preview-fen="rnbqkb1r/pp2pppp/5n2/2pp4/3P4/4PN2/PPP2PPP/RNBQKB1R w KQkq - 0 4" data-from="c7" data-to="c5" data-preview-caption="Preview: 3...c5" data-arrow-color="#222">3...c5</span> or to counter by <span class="board-preview" tabindex="0" data-preview-fen="rn1qkb1r/ppp1pppp/5n2/3p1b2/3P4/4PN2/PPP2PPP/RNBQKB1R w KQkq - 1 4" data-from="c8" data-to="f5" data-preview-caption="Preview: 3...Bf5" data-arrow-color="#222">3...<img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>f5</span>. Not only is this latter a simple, sound developing move, but also it prepares to oppose White’s bishop, which is headed for <span class="board-preview" tabindex="0" data-highlight="d3">d3</span>, with an equal force. The exchange of bishops, which follows sooner or later, will deprive White of a most valuable weapon in kingside attacks. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="rnbqkb1r/ppp2ppp/4pn2/3p4/3P4/3BPN2/PPP2PPP/RNBQK2R b KQkq - 1 4" data-from="f1" data-to="d3">
+<p class="center" id="pz24-14"> <b class="calibre4">4   <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>d3</b> </p>
+
+
+<p id="pz24-15" class="calibre8"> Notice the difference! <span class="board-preview" tabindex="0" data-highlight="d3 e4 f5 g6 h7">White’s bishop</span> commands a beautiful (and undisputed) diagonal, while <span class="board-preview" tabindex="0" data-highlight="c8">Black’s c8-bishop</span>, covering squares of the same colour, is hemmed in by the <span class="board-preview" tabindex="0" data-highlight="e6">e-pawn</span>. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/3BPN2/PPP2PPP/RNBQK2R w KQkq - 0 5" data-from="c7" data-to="c5">
+<p class="center" id="pz24-16"> <b class="calibre4">4   ...     c5!</b> </p>
+
+
+<p id="pz24-18" class="calibre8"> Very good! Black strikes at the <span class="board-preview" tabindex="0" data-highlight="c3 d4 e3 c5 d5">pawn formation in the centre</span> and gives his queen access to the queenside. </p>
+
+
+<p id="pz24-19" class="calibre8"> <i class="calibre9">This freeing move of the c-pawn is of the greatest importance in queen’s pawn openings.</i> </p>
+
+
+</section>
+<section class="lesson-page" data-fen="rnbqkb1r/pp3ppp/4pn2/2pp4/3P4/2PBPN2/PP3PPP/RNBQK2R b KQkq - 0 5" data-from="c2" data-to="c3">
+<p class="center" id="pz24-20"> <b class="calibre4">5   c3</b> </p>
+
+
+<p id="pz24-21" class="calibre8"> “Move only one or two pawns in the opening!” say all the authorities, but no principle must be followed uncompromisingly. </p>
+
+
+<p id="pz24-22" class="calibre8"> This move permits White to meet the advance <span class="board-preview" tabindex="0" data-preview-fen="rnbqkb1r/pp3ppp/4pn2/3p4/2pP4/2PBPN2/PP3PPP/RNBQK2R w KQkq - 0 6" data-from="c5" data-to="c4" data-preview-caption="Preview: ...c4" data-arrow-color="#222">...c4</span> by <span class="board-preview" tabindex="0" data-preview-fen="rnbqkb1r/pp3ppp/4pn2/3p4/2pP4/2P1PN2/PPB2PPP/RNBQK2R b KQkq - 1 6" data-from="d3" data-to="c2" data-preview-caption="Preview: Bc2 after ...c4"><img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>c2</span>, keeping the bishop lined up against Black’s kingside. In the event that pawns are <span id="z25-2"><span class="board-preview" tabindex="0" data-highlight="d4">exchanged on d4</span>, White can recapture with the <span class="board-preview" tabindex="0" data-highlight="e3">e-pawn</span> and free his <span class="board-preview" tabindex="0" data-highlight="c1">c1-bishop</span>. </span></p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqkb1r/pp3ppp/2n1pn2/2pp4/3P4/2PBPN2/PP3PPP/RNBQK2R w KQkq - 1 6" data-from="b8" data-to="c6">
+<p class="center" id="pz25-3"> <b class="calibre4">5   ...</b>     <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img><b class="calibre4">c6</b> </p>
+
+
+<p id="pz25-5" class="calibre8"> Another good move. The knight comes into play toward the centre, increasing the pressure on the d-pawn. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqkb1r/pp3ppp/2n1pn2/2pp4/3P4/2PBPN2/PP1N1PPP/R1BQK2R b KQkq - 2 6" data-from="b1" data-to="d2">
+<p class="center" id="pz25-6"> <b class="calibre4">6   <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>bd2</b> </p>
+
+
+<p id="A4tV" class="calibre8"> An odd-looking sortie. Not only does this knight block the paths of the queen and a bishop, but also the piece itself seems to be doing little good. Yet, an expert would make this move without a moment’s hesitation! For one thing, the knight adds its weight to the pressure on the strategically important <span class="board-preview" tabindex="0" data-highlight="e4">e4-square</span>, the springboard of the coming attack. For another, <i class="calibre9">it is mobilized once it gets off the <span class="board-preview" tabindex="0" data-highlight="a1 b1 c1 d1 e1 f1 g1 h1">back rank</span>.</i> Finally, it can hop out of the way of the queen and the bishop when it is expedient for it to do so. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqk2r/pp2bppp/2n1pn2/2pp4/3P4/2PBPN2/PP1N1PPP/R1BQK2R w KQkq - 3 7" data-from="f8" data-to="e7">
+<p class="center" id="pz25-8"> <b class="calibre4">6   ...</b>      <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img><b class="calibre4">e7</b> </p>
+
+
+<p id="pz25-10" class="calibre8"> Black brings another piece into play (remember that the bishop is doing a job once it leaves the back rank) and prepares to get his king into safety by <span class="board-preview" tabindex="0" data-highlight="e8 g8 f8">castling</span>. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqk2r/pp2bppp/2n1pn2/2pp4/3P4/2PBPN2/PP1N1PPP/R1BQ1RK1 b kq - 4 7" data-from="e1" data-to="g1">
+<p class="center" id="pz25-11"> <b class="calibre4">7   0-0</b> </p>
+
+
+<p id="pz25-12" class="calibre8"> The king flees to a less exposed sector, while the rook comes out of hiding. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqk2r/pp2bppp/2n1pn2/3p4/2pP4/2PBPN2/PP1N1PPP/R1BQ1RK1 w kq - 0 8" data-from="c5" data-to="c4">
+<p class="center" id="pz25-13"> <b class="calibre4">7   ...     c4</b> </p>
+
+
+<p id="pz25-15" class="calibre8"> This is the sort of move instinctively made by a beginner. Its purpose is to chase off an annoying piece from its favourable post. The move is weak because it releases the pressure on <span class="board-preview" tabindex="0" data-highlight="d4 e3">White’s centre</span>. Tension must be maintained if Black is to have something to say about affairs in this vital area. </p>
+
+
+<p id="pz25-16" class="calibre8"> <i class="calibre9">Counterplay in the centre is the best means of opposing a kingside attack and to secure counterplay, the pawn position must be kept fluid.</i> </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqk2r/pp2bppp/2n1pn2/3p4/2pP4/2P1PN2/PPBN1PPP/R1BQ1RK1 b kq - 1 8" data-from="d3" data-to="c2">
+<p class="center" id="pz25-17"> <b class="calibre4">8   <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>c2</b> </p>
+
+
+<p id="pz25-18" class="calibre8"> Naturally the bishop retreats, but stays on the <span class="board-preview" tabindex="0" data-highlight="c2 d3 e4">diagonal leading to the e4-square</span>, where the break will come. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqk2r/p3bppp/2n1pn2/1p1p4/2pP4/2P1PN2/PPBN1PPP/R1BQ1RK1 w kq - 0 9" data-from="b7" data-to="b5">
+<p class="center" id="pz25-19"> <b class="calibre4">8   ...     b5</b> </p>
+
+
+<p id="pz25-22" class="calibre8"> Primarily to make room at <span class="board-preview" tabindex="0" data-highlight="b7">b7</span> for his light-squared bishop, but also with an eye to making trouble with a possible advance of his <span class="board-preview" tabindex="0" data-highlight="a7 b5 c4">queenside pawns</span>. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqk2r/p3bppp/2n1pn2/1p1p4/2pPP3/2P2N2/PPBN1PPP/R1BQ1RK1 b kq - 0 9" data-from="e3" data-to="e4">
+<p class="center" id="pz25-23"> <b class="calibre4">9   e4!</b> </p>
+
+
+<p id="pz26-2" class="calibre8"> The key move in this opening! It will open up <span class="board-preview" tabindex="0" data-highlight="e4 e5 f6 g7 h8">lines for an attack</span> by White’s pent-up pieces. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqk2r/p3bppp/2n1pn2/1p6/2pPp3/2P2N2/PPBN1PPP/R1BQ1RK1 w kq - 0 10" data-from="d5" data-to="e4">
+<p class="center" id="pz26-3"> <b class="calibre4">9   ...     dxe4</b> </p>
+
+
+<p id="pz26-5" class="calibre8"> Not an attractive choice for Black, but he cannot have the threat of the <span class="board-preview" tabindex="0" data-highlight="e5">e5 advance</span> (displacing his knight and severely cramping his movements) perpetually hanging over his head. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bqk2r/p3bppp/2n1pn2/1p6/2pPN3/2P2N2/PPB2PPP/R1BQ1RK1 b kq - 0 10" data-from="f3" data-to="e4">
+<p class="center" id="pz26-6"> <b class="calibre4">10   <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xe4</b> </p>
+
+
+<p id="pz26-8" class="calibre8"> With this recapture, White’s <span class="board-preview" tabindex="0" data-highlight="d1 c1 d2">pieces that were crouched in the background</span> spring into play. </p>
+
+
+<p id="pz26-9" class="calibre8"> White has the initiative and a commanding position in which to exercise it. If no immediate attacking opportunities present themselves, he can quietly put on more pressure by <span class="board-preview" tabindex="0" data-preview-fen="r1bq1rk1/p3bppp/2n1pn2/1p6/2pPN3/2P2N2/PPB1QPPP/R1B2RK1 b - - 2 11" data-from="d1" data-to="e2" data-preview-caption="Preview: Qe2"><img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>e2</span>, <span class="board-preview" tabindex="0" data-preview-fen="r1bq1rk1/p3bppp/2n1pn2/1p6/2pPN3/2P2N2/PPB1QPPP/R1B1R1K1 b - - 4 12" data-from="f1" data-to="e1" data-preview-caption="Preview: Re1 after Qe2"><img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>e1</span>, <span class="board-preview" tabindex="0" data-preview-fen="r1bq1rk1/p3bppp/2n1pn2/1p6/2pPNB2/2P2N2/PPB1QPPP/R3R1K1 b - - 6 13" data-from="c1" data-to="f4" data-preview-caption="Preview: Bf4"><img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>f4</span> (or <span class="board-preview" tabindex="0" data-preview-fen="r1bq1rk1/p3bppp/2n1pn2/1p4B1/2pPN3/2P2N2/PPB1QPPP/R3R1K1 b - - 6 13" data-from="c1" data-to="g5" data-preview-caption="Preview: Bg5"><img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>g5</span>) and <span class="board-preview" tabindex="0" data-preview-fen="r1bq1rk1/p3bppp/2n1pn2/1p6/2pPNB2/2P2N2/PPB1QPPP/3RR1K1 b - - 8 14" data-from="a1" data-to="d1" data-preview-caption="Preview: Rad1"><img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>ad1</span>, and wait for Black’s game to crack. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bq1rk1/p3bppp/2n1pn2/1p6/2pPN3/2P2N2/PPB2PPP/R1BQ1RK1 w - - 1 11" data-from="e8" data-to="g8">
+<p class="center" id="pz26-11"> <b class="calibre4">10</b>   ...     <b class="calibre4">0-0</b> </p>
+
+
+<p id="pz26-13" class="calibre8"> It might have been wiser to postpone castling (contrary to usual principles) as White is poised for an attack in that direction. This is another case where the value of a precept is conditioned by circumstances. </p>
+
+
+<p id="pz26-14" class="calibre8"> Black would do better to try for counterplay by <span class="board-preview" tabindex="0" data-preview-fen="r1b1k2r/p1q1bppp/2n1pn2/1p6/2pPN3/2P2N2/PPB2PPP/R1BQ1RK1 w kq - 1 11" data-from="d8" data-to="c7" data-preview-caption="Preview: 10...Qc7" data-arrow-color="#222">10...<img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>c7</span> followed by <span class="board-preview" tabindex="0" data-preview-fen="r3k2r/pbq1bppp/2n1pn2/1p6/2pPN3/2P2N2/PPB2PPP/R1BQ1RK1 w kq - 3 12" data-from="c8" data-to="b7" data-preview-caption="Preview: 11...Bb7" data-arrow-color="#222">11...<img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>b7</span> and <span class="board-preview" tabindex="0" data-preview-fen="3rk2r/pbq1bppp/2n1pn2/1p6/2pPN3/2P2N2/PPB2PPP/R1BQ1RK1 w k - 5 13" data-from="f8" data-to="d8" data-preview-caption="Preview: 12...Rd8" data-arrow-color="#222">12...<img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>d8</span>.</p>
+
+
+</section>
+<section class="lesson-page" data-fen="r1bq1rk1/p3bppp/2n1pn2/1p6/2pPN3/2P2N2/PPB1QPPP/R1B2RK1 b - - 2 11" data-from="d1" data-to="e2">
+<p class="center" id="pz26-15"> <b class="calibre4">11   <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>e2</b> </p>
+
+
+<p id="pz26-16" class="calibre8"> This developing move also threatens to win a piece. The idea is <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb2bppp/2n1pN2/1p6/2pP4/2P2N2/PPB1QPPP/R1B2RK1 b - - 0 12" data-from="e4" data-to="f6" data-preview-caption="Preview: 12. Nxf6+">12 <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xf6+</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb3ppp/2n1pb2/1p6/2pP4/2P2N2/PPB1QPPP/R1B2RK1 w - - 0 13" data-from="e7" data-to="f6" data-preview-caption="Preview: ...Bxf6"><img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xf6</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb3ppp/2n1pb2/1p6/2pPQ3/2P2N2/PPB2PPP/R1B2RK1 b - - 1 13" data-from="e2" data-to="e4" data-preview-caption="Preview: 13. Qe4">13 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>e4</span>, and the threat of mate on the kingside wins the exposed knight on the queenside. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb2bppp/2n1pn2/1p6/2pPN3/2P2N2/PPB1QPPP/R1B2RK1 w - - 3 12" data-from="c8" data-to="b7">
+<p class="center" id="pz26-17"> <b class="calibre4">11   ...</b>     <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img><b class="calibre4">b7</b> </p>
+
+
+<p id="pz26-19" class="calibre8"> Black guards his knight while developing another piece. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb2bppp/2n1pn2/1p4N1/2pPN3/2P5/PPB1QPPP/R1B2RK1 b - - 4 12" data-from="f3" data-to="g5">
+<p class="center" id="pz26-20"> <b class="calibre4">12   <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>fg5!</b> </p>
+
+
+<p id="pz26-21" class="calibre8"> Threatening the deadly <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb2bpp1/2n1pN1p/1p4N1/2pP4/2P5/PPB1QPPP/R1B2RK1 b - - 0 13" data-from="e4" data-to="f6" data-preview-caption="Preview: 13. Nxf6+">13 <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xf6+</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb3pp1/2n1pb1p/1p4N1/2pP4/2P5/PPB1QPPP/R1B2RK1 w - - 0 14" data-from="e7" data-to="f6" data-preview-caption="Preview: ...Bxf6"><img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xf6</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb3ppB/2n1pb1p/1p4N1/2pP4/2P5/PP2QPPP/R1B2RK1 b - - 1 14" data-from="c2" data-to="h7" data-preview-caption="Preview: 14. Bxh7+">14 <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xh7+</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1r1k/pb3ppB/2n1pb1p/1p4N1/2pP4/2P5/PP2QPPP/R1B2RK1 w - - 2 15" data-from="g8" data-to="h8" data-preview-caption="Preview: ...Kh8" data-arrow-color="#222"><img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>h8</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1r1k/pb3ppB/2n1pb1p/1p4NQ/2pP4/2P5/PP3PPP/R1B2RK1 b - - 3 15" data-from="e2" data-to="h5" data-preview-caption="Preview: 15. Qh5">15 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>h5</span>. </p>
+
+
+<p id="pz26-22" class="calibre8"> Why an exclamation mark for a simple threat which is so easily countered? Why glorify this move when Black can not only save the pawn but also cause White to lose time? Black simply moves the h-pawn one square, rescues the pawn, and forces White’s knight to retreat. </p>
+
+
+<p id="pz26-23" class="calibre8"> The answer to these questions is that White’s purpose with his <span class="board-preview" tabindex="0" data-highlight="g5">brilliant knight move</span> <i class="calibre9">is to compel one of the pawns defending the king to step forward.</i> </p>
+
+
+<p id="pz26-24" class="calibre8"> The secret of conducting a successful kingside attack is to create a breach in the <span class="board-preview" tabindex="0" data-highlight="f7 g7 h7">cordon of pawns surrounding the enemy king</span>; to induce or force one of the pawns to move. The change in the line-up of pawns fixes the defence with <i class="calibre9">a permanent weakness.</i> </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb2bpp1/2n1pn1p/1p4N1/2pPN3/2P5/PPB1QPPP/R1B2RK1 w - - 0 13" data-from="h7" data-to="h6">
+<p class="center" id="pz26-25"> <b class="calibre4">12   ... h6</b> </p>
+
+
+<p id="pz26-27" class="calibre8"> “Touch the pawns before your king with only infinite delicacy,” says Santasiere. But, alas, it’s too late – Black must disturb the pawn position. </p>
+
+
+<p id="pz26-28" class="calibre8"> Had he tried <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb2bppp/2n1p3/1p4N1/2pPn3/2P5/PPB1QPPP/R1B2RK1 w - - 0 13" data-from="c5" data-to="e4" data-preview-caption="Preview: 12...Nxe4" data-arrow-color="#222">12...<img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xe4</span>, the recapture by <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb2bppp/2n1p3/1p4N1/2pPQ3/2P5/PPB2PPP/R1B2RK1 b - - 0 13" data-from="e2" data-to="e4" data-preview-caption="Preview: 13. Qxe4">13 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xe4</span> threatens mate, and compels <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb2bp1p/2n1p1p1/1p4N1/2pPQ3/2P5/PPB2PPP/R1B2RK1 w - - 0 14" data-from="g7" data-to="g6" data-preview-caption="Preview: 13...g6" data-arrow-color="#222">13...g6</span> – and the pawns are disarranged! </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb2bpp1/2n1pN1p/1p4N1/2pP4/2P5/PPB1QPPP/R1B2RK1 b - - 0 13" data-from="e4" data-to="f6">
+<p class="center" id="pz27-2"> <b class="calibre4">13   <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xf6+</b> </p>
+
+
+<p id="pz27-3" class="calibre8"> Destroying the <span class="board-preview" tabindex="0" data-highlight="f6">f6-knight</span>, the best defender of a castled position. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb3pp1/2n1pb1p/1p4N1/2pP4/2P5/PPB1QPPP/R1B2RK1 w - - 0 14" data-from="e7" data-to="f6">
+<p class="center" id="pz27-5"> <b class="calibre4">13   ...      <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xf6</b> </p>
+
+
+<p id="pz27-7" class="calibre8"> The alternative <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb2bp2/2n1pp1p/1p4N1/2pP4/2P5/PPB1QPPP/R1B2RK1 w - - 0 14" data-from="g7" data-to="f6" data-preview-caption="Preview: 13...gxf6" data-arrow-color="#222">13...gxf6</span> loses quickly. White could win either by gobbling up pawns with <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb2bp2/2n1Np1p/1p6/2pP4/2P5/PPB1QPPP/R1B2RK1 b - - 0 14" data-from="g5" data-to="e6" data-preview-caption="Preview: 14. Nxe6">14 <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xe6</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb2b3/2n1pp1p/1p6/2pP4/2P5/PPB1QPPP/R1B2RK1 w - - 0 15" data-from="f7" data-to="e6" data-preview-caption="Preview: ...fxe6" data-arrow-color="#222">fxe6</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb2b3/2n1pp1p/1p6/2pP2Q1/2P5/PPB2PPP/R1B2RK1 b - - 1 15" data-from="e2" data-to="g4" data-preview-caption="Preview: 15. Qg4+">15 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>g4+</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1r1k/pb2b3/2n1pp1p/1p6/2pP2Q1/2P5/PPB2PPP/R1B2RK1 w - - 2 16" data-from="g8" data-to="h8" data-preview-caption="Preview: ...Kh8" data-arrow-color="#222"><img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>h8</span> (15...<img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>f7 <span class="board-preview" tabindex="0" data-preview-fen="r2q1r1k/pb2b3/2n1ppQp/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 b - - 3 16" data-from="g4" data-to="g6" data-preview-caption="Preview: 16. Qg6">16 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>g6</span>#) 16 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>g6 <span class="board-preview" tabindex="0" data-preview-fen="r2q1r1k/pb2b3/2n1p1Qp/1p3p2/2pP4/2P5/PPB2PPP/R1B2RK1 w - - 0 17" data-from="f6" data-to="f5" data-preview-caption="Preview: ...f5" data-arrow-color="#222">f5</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1r1k/pb2b3/2n1p2Q/1p3p2/2pP4/2P5/PPB2PPP/R1B2RK1 b - - 0 17" data-from="g6" data-to="h6" data-preview-caption="Preview: 17. Qxh6+">17 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xh6+</span> <img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>g8 18 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xe6+ and the f-pawn falls next, or with 14 <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>h3 (threatening 15 <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xh6) 14...<img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>g7 15 <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xh6+ <img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>xh6 16 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>e3+ <img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>g7 17 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>g3+ <img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>h8 18 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>h4+ followed by 19 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>h7#. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb3pp1/2n1pb1p/1p4N1/2pPQ3/2P5/PPB2PPP/R1B2RK1 b - - 1 14" data-from="e2" data-to="e4">
+<p class="center" id="pz27-13"> <b class="calibre4">14   <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>e4</b> </p>
+
+
+<p id="pz27-14" class="calibre8"> Threatening instant mate. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb3p2/2n1pbpp/1p4N1/2pPQ3/2P5/PPB2PPP/R1B2RK1 w - - 0 15" data-from="g7" data-to="g6">
+<p class="center" id="pz27-15"> <b class="calibre4">14</b>   ...     <b class="calibre4">g6</b> </p>
+
+
+<p id="pz27-17" class="calibre8"> Making room for the king’s escape by <span class="board-preview" tabindex="0" data-preview-fen="r2qr1k1/pb3pp1/2n1pb1p/1p4N1/2pPQ3/2P5/PPB2PPP/R1B2RK1 w - - 2 15" data-from="f8" data-to="e8" data-preview-caption="Preview: 14...Re8" data-arrow-color="#222">14...<img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>e8</span> does not look inviting, as after <span class="board-preview" tabindex="0" data-preview-fen="r2qr1k1/pb3ppQ/2n1pb1p/1p4N1/2pP4/2P5/PPB2PPP/R1B2RK1 b - - 3 15" data-from="e4" data-to="h7" data-preview-caption="Preview: 15. Qh7+">15 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>h7+</span> <span class="board-preview" tabindex="0" data-preview-fen="r2qrk2/pb3ppQ/2n1pb1p/1p4N1/2pP4/2P5/PPB2PPP/R1B2RK1 w - - 4 16" data-from="g8" data-to="f8" data-preview-caption="Preview: ...Kf8" data-arrow-color="#222"><img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>f8</span> <span class="board-preview" tabindex="0" data-preview-fen="r2qrk2/pb3ppQ/2n1pb1p/1p6/2pPN3/2P5/PPB2PPP/R1B2RK1 b - - 5 16" data-from="g5" data-to="e4" data-preview-caption="Preview: 16. Ne4">16 <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>e4</span> White’s attack appears dangerous. However, it is preferable to Black’s actual move, which stops the queen coming any closer, but alters the pawn configuration. This change in the pawn formation saddles Black with a weakness that is <i class="calibre9">organic,</i> and one that can turn out to be fatal. </p>
+
+
+<p id="pz27-18" class="calibre8"> All this is encouraging to White, but how does he proceed? How does he exploit the weaknesses in Black’s position? Above all, what does he do about his knight which is still under attack? Shall it retreat abjectly? </p>
+
+
+<p id="pz27-19" class="calibre8"> Before moving the knight back to f3 mechanically and unthinkingly, White looks carefully at the situation. The opportunity to strike a decisive blow may be here at this very moment, but one hasty ‘obvious move’ may give Black just enough breathing time to reorganize his defences. </p>
+
+
+<p id="pz27-20" class="calibre8"> This is the position, and here is how White reasons out his attack: </p>
+
+
+<p id="pz27-22" class="calibre8"> The key point must be Black’s <span class="board-preview" tabindex="0" data-highlight="g6">g-pawn</span>, which guards his king from invasion. If anything happens to this pawn – if it is captured – the defence crumbles, and I can break into the fortress. How do I go about removing it from the board? </p>
+
+
+<p id="pz27-23" class="calibre8"> The g-pawn is protected by the f-pawn; suppose I destroy its support by sacrificing my knight for the f-pawn? After <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb3N2/2n1pbpp/1p6/2pPQ3/2P5/PPB2PPP/R1B2RK1 b - - 0 15" data-from="g5" data-to="f7" data-preview-caption="Preview: 15. Nxf7">15 <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xf7</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1r2/pb3k2/2n1pbpp/1p6/2pPQ3/2P5/PPB2PPP/R1B2RK1 w - - 0 16" data-from="g8" data-to="f7" data-preview-caption="Preview: ...Kxf7" data-arrow-color="#222"><img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>xf7</span> (or 15...<span class="board-preview" tabindex="0" data-preview-fen="r2q2k1/pb3r2/2n1pbpp/1p6/2pPQ3/2P5/PPB2PPP/R1B2RK1 w - - 0 16" data-from="f8" data-to="f7" data-preview-caption="Preview: ...Rxf7" data-arrow-color="#222"><img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>xf7</span>) <span class="board-preview" tabindex="0" data-preview-fen="r2q1r2/pb3k2/2n1pbQp/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 b - - 0 16" data-from="e4" data-to="g6" data-preview-caption="Preview: 16. Qxg6+">16 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xg6+</span>, and I have two pawns for my knight, with a third one in <span id="pz27-24"></span>sight, as the h-pawn must fall. Material is then approximately even, but his position is completely broken up, and clinching the win should be easy.</p>
+
+
+<p id="pz27-25" class="calibre8"> This might be the general plan, but before putting it in motion, White analyses the combination for possible flaws and comes up with this: after <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb3N2/2n1pbpp/1p6/2pPQ3/2P5/PPB2PPP/R1B2RK1 b - - 0 15" data-from="g5" data-to="f7" data-preview-caption="Preview: 15. Nxf7">15 <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xf7</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q2k1/pb3r2/2n1pbpp/1p6/2pPQ3/2P5/PPB2PPP/R1B2RK1 w - - 0 16" data-from="f8" data-to="f7" data-preview-caption="Preview: ...Rxf7" data-arrow-color="#222"><img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>xf7</span> (bringing another piece to the defence) <span class="board-preview" tabindex="0" data-preview-fen="r2q2k1/pb3r2/2n1pbQp/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 b - - 0 16" data-from="e4" data-to="g6" data-preview-caption="Preview: 16. Qxg6+">16 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xg6+</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q2k1/pb4r1/2n1pbQp/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 w - - 1 17" data-from="f7" data-to="g7" data-preview-caption="Preview: ...Rg7" data-arrow-color="#222"><img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>g7</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q2k1/pb4r1/2n1pb1Q/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 b - - 0 17" data-from="g6" data-to="h6" data-preview-caption="Preview: 17. Qxh6">17 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xh6</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q2k1/pb4r1/4pb1Q/1p6/2pn4/2P5/PPB2PPP/R1B2RK1 w - - 0 18" data-from="c6" data-to="d4" data-preview-caption="Preview: ...Nxd4!" data-arrow-color="#222"><img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xd4!</span>, suddenly Black is the aggressor! He threatens mate in two by 18...<img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>e2+ 19 <img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>hl <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xg2#, as well as outright <span id="z28-1">ruin by 18...<img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>xg2+, followed by a deadly discovered check. </span></p>
+
+
+<p id="pz28-2" class="calibre8"> Clearly this line of play is too dangerous. Is there another way to break through, without letting Black’s rook come into the game? Can I get rid of the <span class="board-preview" tabindex="0" data-highlight="f7">f-pawn</span> without disturbing the rook? It is important that I remove this pawn, as it supports the <span class="board-preview" tabindex="0" data-highlight="g6">g-pawn</span> and the <span class="board-preview" tabindex="0" data-highlight="e6">e-pawn</span>. Wait a minute! <i class="calibre9">There is a clue in the last sentence.</i> The f-pawn, guarding two other pawns, is serving two masters. Obviously it is overworked! I must add to its burden by luring it away from its present important post! </p>
+
+
+<p id="pz28-3" class="calibre8"> Therefore: </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb3p2/2n1Nbpp/1p6/2pPQ3/2P5/PPB2PPP/R1B2RK1 b - - 0 15" data-from="g5" data-to="e6">
+<p class="center" id="pz28-4"> <b class="calibre4">15   <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>xe6!</b> </p>
+
+
+<p id="pz28-5" class="calibre8"> The knight captures a pawn and attacks <span class="board-preview" tabindex="0" data-highlight="d8 f8">queen and rook</span>. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb6/2n1pbpp/1p6/2pPQ3/2P5/PPB2PPP/R1B2RK1 w - - 0 16" data-from="f7" data-to="e6">
+<p class="center" id="pz28-7"> <b class="calibre4">15   ...     fxe6</b> </p>
+
+
+<p id="pz28-9" class="calibre8"> Black must accept the sacrifice or lose rook and pawn for the knight. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb6/2n1pbQp/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 b - - 0 16" data-from="e4" data-to="g6">
+<p class="center" id="pz28-11"> <b class="calibre4">16    <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xg6<i class="calibre9">+</i></b> </p>
+
+
+<p id="pz28-13" class="calibre8"> Stronger than <span class="board-preview" tabindex="0" data-highlight="e6">taking the e-pawn</span>, after which Black has four ways to get out of check. Each of these replies might lose, but it is more practical to attack the enemy with blows that leave him little choice of reply. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb4b1/2n1p1Qp/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 w - - 1 17" data-from="f8" data-to="g7">
+<p class="center" id="pz28-14"> <b class="calibre4">16   ...     <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>g7</b> </p>
+
+
+<p id="pz28-16" class="calibre8"> The only move, since <span class="board-preview" tabindex="0" data-preview-fen="r2q1r1k/pb6/2n1pbQp/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 w - - 1 17" data-from="g8" data-to="h8" data-preview-caption="Preview: 16...Kh8" data-arrow-color="#222">16...<img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>h8</span> walks right into mate. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1rk1/pb4bQ/2n1p2p/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 b - - 2 17" data-from="g6" data-to="h7">
+<p class="center" id="pz28-17"> <b class="calibre4">17   <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>h7+</b> </p>
+
+
+<p id="pz28-18" class="calibre8"> White has other attractive continuations in <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb4b1/2n1p1QB/1p6/2pP4/2P5/PPB2PPP/R4RK1 b - - 0 17" data-from="c1" data-to="h6" data-preview-caption="Preview: 17. Bxh6">17 <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xh6</span> or <span class="board-preview" tabindex="0" data-preview-fen="r2q1rk1/pb4b1/2n1Q2p/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 b - - 0 17" data-from="g6" data-to="e6" data-preview-caption="Preview: 17. Qxe6+">17 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xe6+</span>, but this forces the king out into the open where White’s other pieces can get at him. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1r2/pb3kbQ/2n1p2p/1p6/2pP4/2P5/PPB2PPP/R1B2RK1 w - - 3 18" data-from="g8" data-to="f7">
+<p class="center" id="pz28-19"> <b class="calibre4">17   ...      <img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>f7</b> </p>
+
+
+<p id="pz28-21" class="calibre8"> The only move. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1r2/pb3kbQ/2n1p1Bp/1p6/2pP4/2P5/PP3PPP/R1B2RK1 b - - 4 18" data-from="c2" data-to="g6">
+<p class="center" id="pz28-22"> <b class="calibre4">18   <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>g6+</b> </p>
+
+
+<p id="pz28-23" class="calibre8"> Stronger than <span class="board-preview" tabindex="0" data-preview-fen="r2q1r2/pb3kbQ/2n1p2B/1p6/2pP4/2P5/PPB2PPP/R4RK1 b - - 0 18" data-from="c1" data-to="h6" data-preview-caption="Preview: 18. Bxh6">18 <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xh6</span>, to which Black retorts <span class="board-preview" tabindex="0" data-preview-fen="r4r2/pb3kbQ/2n1pq1B/1p6/2pP4/2P5/PPB2PPP/R4RK1 w - - 1 19" data-from="d8" data-to="f6" data-preview-caption="Preview: 18...Qf6" data-arrow-color="#222">18...<img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>f6</span> followed by <span class="board-preview" tabindex="0" data-preview-fen="r6r/pb3kbQ/2n1pq1B/1p6/2pP4/2P5/PPB2PPP/R4RK1 w - - 3 20" data-from="f8" data-to="h8" data-preview-caption="Preview: 19...Rh8" data-arrow-color="#222">19...<img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>h8</span>. The text-move keeps him on the run. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1r2/pb4bQ/2n1pkBp/1p6/2pP4/2P5/PP3PPP/R1B2RK1 w - - 5 19" data-from="f7" data-to="f6">
+<p class="center" id="pz28-27"> <b class="calibre4">18   ...     <img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>f6</b> </p>
+
+
+<p id="pz28-29" class="calibre8"> Certainly not <span class="board-preview" tabindex="0" data-preview-fen="r2q1r2/pb2k1bQ/2n1p1Bp/1p6/2pP4/2P5/PP3PPP/R1B2RK1 w - - 5 19" data-from="f7" data-to="e7" data-preview-caption="Preview: 18...Ke7" data-arrow-color="#222">18...<img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>e7</span>, when <span class="board-preview" tabindex="0" data-preview-fen="r2q1r2/pb2k1Q1/2n1p1Bp/1p6/2pP4/2P5/PP3PPP/R1B2RK1 b - - 0 19" data-from="h7" data-to="g7" data-preview-caption="Preview: 19. Qxg7+">19 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xg7+</span> lets White pick up a couple of bishops. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1r2/pb4bQ/2n1pk1p/1p5B/2pP4/2P5/PP3PPP/R1B2RK1 b - - 6 19" data-from="g6" data-to="h5">
+<p class="center" id="pz28-31"> <b class="calibre4">19   <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>h5</b> </p>
+
+
+<p id="pz28-33" class="calibre8"> White is still angling for <span class="board-preview" tabindex="0" data-preview-fen="r2q1r2/pb2n1b1/4pkQp/1p5B/2pP4/2P5/PP3PPP/R1B2RK1 b - - 8 20" data-from="h5" data-to="g6" data-preview-caption="Preview: 20. Qg6+">20 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>g6+</span> <span class="board-preview" tabindex="0" data-highlight="e7"><img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>e7</span> <span class="board-preview" tabindex="0" data-preview-fen="r2q1r2/pb2n1Q1/4pk1p/1p5B/2pP4/2P5/PP3PPP/R1B2RK1 b - - 0 21" data-from="g6" data-to="g7" data-preview-caption="Preview: 21. Qxg7+">21 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xg7+</span>, when both black bishops come off the board. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1r2/pb2n1bQ/4pk1p/1p5B/2pP4/2P5/PP3PPP/R1B2RK1 w - - 7 20" data-from="c6" data-to="e7">
+<p class="center" id="pz28-34"> <b class="calibre4">19   ... <img class="imgpubc" alt="images/nec-7-1.jpg" src="assets/images/00004.jpeg"></img>e7</b> </p>
+
+
+<p id="pz28-36" class="calibre8"> The only way to prevent the queen check. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q1r2/pb2n1bQ/4pk1B/1p5B/2pP4/2P5/PP3PPP/R4RK1 b - - 0 20" data-from="c1" data-to="h6">
+<p class="center" id="pz28-37"> <b class="calibre4">20   <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xh6</b> </p>
+
+
+<p id="pz28-38" class="calibre8"> White is not playing to pick up stray pawns, but to bring another <span id="z29-1">piece into the attack. The pawn that is added to the collection is incidental to the general scheme of things. </span></p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q2r1/pb2n1bQ/4pk1B/1p5B/2pP4/2P5/PP3PPP/R4RK1 w - - 1 21" data-from="f8" data-to="g8">
+<p class="center" id="pz29-2"> <b class="calibre4">20   ... <img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>g8</b> </p>
+
+
+<p id="pz29-4" class="calibre8"> To parry the threat of <span class="board-preview" tabindex="0" data-highlight="g7">21 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xg7+</span> <span class="board-preview" tabindex="0" data-highlight="f5"><img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>f5</span> <span class="board-preview" tabindex="0" data-highlight="e5">22 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>e5#</span>. </p>
+
+
+<p id="pz29-5" class="calibre8"> On <span class="board-preview" tabindex="0" data-highlight="h6">20...<img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xh6</span> White intended <span class="board-preview" tabindex="0" data-highlight="h6">21 <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>xh6+</span> <span class="board-preview" tabindex="0" data-highlight="f5"><img class="imgpubc" alt="images/nec-7-2.jpg" src="assets/images/00005.jpeg"></img>f5</span> <span class="board-preview" tabindex="0" data-highlight="e1">22 <img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>ael</span>, when <span id="pz29-7"></span>the threat of mate either by the rook or the g-pawn is decisive.</p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q2r1/pb2n1bQ/4pk1B/1p5B/2pP3P/2P5/PP3PP1/R4RK1 b - - 0 21" data-from="h2" data-to="h4">
+<p class="center" id="pz29-8"> <b class="calibre4">21   h4</b> </p>
+
+
+<p id="pz29-9" class="calibre8"> The new threat is <span class="board-preview" tabindex="0" data-highlight="g5">22 <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>g5#</span>. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q2r1/pb2n2Q/4pk1b/1p5B/2pP3P/2P5/PP3PP1/R4RK1 w - - 0 22" data-from="g7" data-to="h6">
+<p class="center" id="pz29-10"> <b class="calibre4">21   ...      <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xh6</b> </p>
+
+
+<p id="pz29-12" class="calibre8"> Loses on the spot, but there was no defence for Black: if <span class="board-preview" tabindex="0" data-preview-fen="r2q2r1/pb2n1bQ/5k1B/1p2p2B/2pP3P/2P5/PP3PP1/R4RK1 w - - 0 22" data-from="e6" data-to="e5" data-preview-caption="Preview: 21...e5" data-arrow-color="#222">21...e5</span>, then <span class="board-preview" tabindex="0" data-highlight="g7">22 <img class="imgpubc" alt="images/nec-7-5.jpg" src="assets/images/00008.jpeg"></img>xg7+</span> <span class="board-preview" tabindex="0" data-highlight="g7"><img class="imgpubc" alt="images/nec-7-4.jpg" src="assets/images/00007.jpeg"></img>xg7</span> <span class="board-preview" tabindex="0" data-highlight="e5">23 dxe5+</span> and the king must abandon the rook. </p>
+
+
+</section>
+<section class="lesson-page" data-fen="r2q2r1/pb2nQ2/4pk1b/1p5B/2pP3P/2P5/PP3PP1/R4RK1 b - - 1 22" data-from="h5" data-to="f7">
+<p class="center" id="pz29-13"> <b class="calibre4">22   <img class="imgpubc" alt="images/nec-7-3.jpg" src="assets/images/00006.jpeg"></img>f7# (l-0)</b> </p>
+</section>
+</div>
+  </main>
+
+</div>
+<script>
+  const board = document.getElementById("position-after-e4");
+  const pages = [...document.querySelectorAll(".lesson-page")];
+  const previous = document.getElementById("previous-page");
+  const next = document.getElementById("next-page");
+  const pageIndicator = document.getElementById("page-indicator");
+  const boardCaption = document.getElementById("board-caption");
+  const pageStorageKey = "logical-chess-game-3-page";
+  let pageIndex = Number(localStorage.getItem(pageStorageKey)) || 0;
+
+  function renderPagePosition(page) {
+    const arrows = page.dataset.from ? [{ from: page.dataset.from, to: page.dataset.to }] : [];
+    renderChessboard(board, page.dataset.fen, { arrows });
+    boardCaption.textContent = page.dataset.from ? `Position after ${page.dataset.from}–${page.dataset.to}` : "Starting position";
+    boardCaption.classList.remove("is-preview");
+  }
+  function showPage(index) {
+    pageIndex = Math.max(0, Math.min(index, pages.length - 1));
+    localStorage.setItem(pageStorageKey, pageIndex);
+    pages.forEach((page, i) => { page.classList.toggle("is-active", i === pageIndex); if (i === pageIndex) page.scrollTop = 0; });
+    renderPagePosition(pages[pageIndex]);
+    previous.disabled = pageIndex === 0; next.disabled = pageIndex === pages.length - 1;
+    pageIndicator.textContent = `Page ${pageIndex + 1} of ${pages.length}`;
+  }
+  previous.addEventListener("click", () => showPage(pageIndex - 1));
+  next.addEventListener("click", () => showPage(pageIndex + 1));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") showPage(pageIndex - 1);
+    if (event.key === "ArrowRight") showPage(pageIndex + 1);
+  });
+  document.querySelectorAll(".board-preview").forEach((preview) => {
+    const showPreview = () => {
+      const page = pages[pageIndex];
+      const arrows = preview.dataset.previewFen ? [{ from: preview.dataset.from, to: preview.dataset.to, color: preview.dataset.arrowColor || "#2386c8", dashed: true }] : (page.dataset.from ? [{ from: page.dataset.from, to: page.dataset.to }] : []);
+      renderChessboard(board, preview.dataset.previewFen || page.dataset.fen, { arrows, highlights: (preview.dataset.highlight || "").split(" ").filter(Boolean) });
+      boardCaption.textContent = preview.dataset.previewCaption || `Highlighted squares: ${preview.textContent.trim()}`;
+      boardCaption.classList.add("is-preview");
+    };
+    const restore = () => renderPagePosition(pages[pageIndex]);
+    preview.addEventListener("mouseenter", showPreview); preview.addEventListener("mouseleave", restore);
+    preview.addEventListener("focus", showPreview); preview.addEventListener("blur", restore);
+  });
+  showPage(pageIndex);
+</script>
+</body></html>
